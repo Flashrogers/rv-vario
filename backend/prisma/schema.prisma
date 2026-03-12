@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Shop {
+  id          Int      @id @default(autoincrement())
+  shop        String   @unique
+  accessToken String
+  scope       String
+  installedAt DateTime @default(now())
+}
+model Store {
+  id        Int      @id @default(autoincrement())
+  shop      String   @unique
+  accessToken String
+  createdAt DateTime @default(now())
+}
+
+model ProductConfig {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  productId String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model VariantImageMap {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  productId String
+  variantId String
+  imageId   String
+  createdAt DateTime @default(now())
+
+  @@unique([shop, variantId])
+}
+
+model AppSettings {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  applyMode String   @default("tag")
+}
+
+model VariantSwatch {
+ id        Int      @id @default(autoincrement())
+ shop      String
+ productId String
+ variantId String
+ type      String
+ value     String
+ createdAt DateTime @default(now())
+}
