@@ -1,21 +1,10 @@
 const express = require("express")
-const prisma = require("../utils/prisma")
 
 const router = express.Router()
 
-router.post("/app-uninstalled", async (req,res)=>{
+router.post("/app-uninstalled",(req,res)=>{
 
- const shop = req.headers["x-shopify-shop-domain"]
-
- if(shop){
-
-  await prisma.shop.delete({
-   where:{shop}
-  })
-
-  console.log("App uninstalled:", shop)
-
- }
+ console.log("App uninstall webhook received")
 
  res.sendStatus(200)
 

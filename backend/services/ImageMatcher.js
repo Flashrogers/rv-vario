@@ -1,58 +1,28 @@
 function normalize(str){
+
  return str
   ?.toLowerCase()
-  .replace(/[^a-z0-9]/g,"")
+  .replace(/[^a-z0-9]/g,"");
+
 }
 
-function scoreMatch(option, imageName){
+function matchImages(variants, images){
 
- const normalizedOption = normalize(option)
- const normalizedImage = normalize(imageName)
-
- if(!normalizedOption) return 0
-
- if(normalizedImage.includes(normalizedOption)){
-  return normalizedOption.length
- }
-
- return 0
-}
-
-function imageMatcher(variants, images){
-
- const result = {}
+ const result = {};
 
  variants.forEach(variant => {
 
-  const options = [
-   variant.option1,
-   variant.option2,
-   variant.option3
-  ].filter(Boolean)
+  const option = normalize(variant.option1);
 
-  let bestScore = 0
-  let bestImage = null
+  const image = images.find(img => 
+   normalize(img.src).includes(option)
+  );
 
-  images.forEach(img => {
+  result[variant.id] = image ? image.id : null;
 
-   let score = 0
+ });
 
-   options.forEach(option => {
-    score += scoreMatch(option, img.src)
-   })
-
-   if(score > bestScore){
-    bestScore = score
-    bestImage = img
-   }
-
-  })
-
-  result[variant.id] = bestImage ? bestImage.id : null
-
- })
-
- return result
+ return result;
 }
 
-module.exports = imageMatcher
+module.exports = matchImages;

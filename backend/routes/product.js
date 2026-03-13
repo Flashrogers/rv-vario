@@ -1,33 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
 
-router.get("/:id", async (req, res) => {
+const shopify = require("../services/shopifyService");
 
-  try {
+router.get("/:id", async (req,res)=>{
 
-    const productId = req.params.id;
+ try{
 
-    const response = await axios.get(
-      `https://${process.env.SHOPIFY_SHOP}/admin/api/2024-01/products/${productId}.json`,
-      {
-        headers: {
-          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN
-        }
-      }
-    );
+  const product = await shopify.getProduct(req.params.id);
 
-    res.json(response.data.product);
+  res.json(product);
 
-  } catch (error) {
+ }catch(err){
 
-    console.error(error.response?.data || error.message);
+  console.error(err);
 
-    res.status(500).json({
-      error: "Failed to fetch product"
-    });
+  res.status(500).json({
+   error:"Failed to fetch product"
+  });
 
-  }
+ }
 
 });
 

@@ -1,36 +1,26 @@
-const axios = require("axios")
+const axios = require("axios");
 
-const baseURL = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-01`
+const SHOP = process.env.SHOPIFY_SHOP;
+const TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
 
 const client = axios.create({
- baseURL,
+ baseURL: `https://${SHOP}/admin/api/2024-01`,
  headers: {
-  "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
-  "Content-Type": "application/json"
+  "X-Shopify-Access-Token": TOKEN
  }
-})
+});
 
-async function getProducts(pageInfo = null) {
-
- let url = "/products.json?limit=20"
-
- if (pageInfo) {
-  url += `&page_info=${pageInfo}`
- }
-
- const res = await client.get(url)
-
- return res.data.products
+async function getProducts() {
+ const res = await client.get("/products.json");
+ return res.data.products;
 }
 
-async function getProduct(productId) {
-
- const res = await client.get(`/products/${productId}.json`)
-
- return res.data.product
+async function getProduct(id) {
+ const res = await client.get(`/products/${id}.json`);
+ return res.data.product;
 }
 
 module.exports = {
  getProducts,
  getProduct
-}
+};

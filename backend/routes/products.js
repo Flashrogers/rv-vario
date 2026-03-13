@@ -1,42 +1,55 @@
-const express = require("express");
-const router = express.Router();
-const axios = require("axios");
+const express = require("express")
+const axios = require("axios")
 
-/*
-GET ALL PRODUCTS
-*/
+const router = express.Router()
 
 router.get("/", async (req, res) => {
 
-  try {
+ try {
 
-    const shop = process.env.SHOPIFY_SHOP;
-    const token = process.env.SHOPIFY_ACCESS_TOKEN;
+  const SHOP = process.env.SHOPIFY_SHOP
+  const TOKEN = process.env.SHOPIFY_ACCESS_TOKEN
 
-    const response = await axios.get(
-      `https://${shop}/admin/api/2024-04/products.json`,
-      {
-        headers: {
-          "X-Shopify-Access-Token": token,
-          "Content-Type": "application/json"
-        }
-      }
-    );
+  console.log("SHOP:", SHOP)
+  console.log("TOKEN:", TOKEN ? "Token Loaded" : "Token Missing")
 
-    res.json({
-      products: response.data.products
-    });
+  const response = await axios.get(
+   `https://${SHOP}/admin/api/2024-01/products.json`,
+   {
+    headers: {
+     "X-Shopify-Access-Token": TOKEN,
+     "Content-Type": "application/json"
+    }
+   }
+  )
 
-  } catch (error) {
+  const products = response.data.products.map(product => ({
+   id: product.id,
+   title: product.title,
+   image: product.image?.src || null,
+   media: product.images.length,
+   status: product.status
+  }))
 
-    console.error(error.response?.data || error);
+  res.json({ products })
 
-    res.status(500).json({
-      error: "Failed to fetch products"
-    });
+ } catch (error) {
 
+  console.log("SHOPIFY ERROR ↓↓↓")
+
+  if (error.response) {
+   console.log(error.response.status)
+   console.log(error.response.data)
+  } else {
+   console.log(error.message)
   }
 
-});
+  res.status(500).json({
+   error: "Failed to fetch products"
+  })
 
+ }
 
+})
+
+module.exports = router

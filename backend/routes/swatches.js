@@ -1,36 +1,47 @@
 const express = require("express")
-const prisma = require("../utils/prisma")
-
 const router = express.Router()
+
+const prisma = require("../utils/prisma")
 
 router.post("/save", async (req,res)=>{
 
- const {shop,productId,variantId,type,value} = req.body
+  const {shop, productId, variantId, type, value} = req.body
 
- try{
+  try{
 
-  const swatch = await prisma.variantSwatch.create({
-   data:{
-    shop,
-    productId,
-    variantId,
-    type,
-    value
-   }
-  })
+    await prisma.variantSwatch.upsert({
 
-  res.json(swatch)
+      where:{
+        variantId
+      },
 
- }catch(err){
+      update:{
+        type,
+        value
+      },
 
-  console.error(err)
-  res.status(500).json({error:"Failed to save swatch"})
+      create:{
+        shop,
+        productId,
+        variantId,
+        type,
+        value
+      }
 
- }
+    })
 
-})
-router.get("/", (req,res)=>{
- res.json({message:"Swatch route working"})
+    res.json({status:"saved"})
+
+  }catch(err){
+
+    console.error(err)
+
+    res.status(500).json({
+      error:"Failed to save swatch"
+    })
+
+  }
+
 })
 
 module.exports = router

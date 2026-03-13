@@ -21,12 +21,34 @@ model Store {
   createdAt DateTime @default(now())
 }
 
+model Product {
+
+  id        String   @id
+  shop      String
+  title     String
+  handle    String
+  image     String?
+  media     Int
+  status    String
+  createdAt DateTime @default(now())
+
+}
+
 model ProductConfig {
   id        Int      @id @default(autoincrement())
   shop      String
   productId String
   enabled   Boolean  @default(true)
   createdAt DateTime @default(now())
+}
+model VariantImage {
+
+  id        Int @id @default(autoincrement())
+  shop      String
+  productId String
+  variantId String
+  imageId   String
+
 }
 
 model VariantImageMap {
