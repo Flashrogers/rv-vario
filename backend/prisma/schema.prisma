@@ -30,14 +30,17 @@ model ProductConfig {
 }
 
 model VariantImageMap {
-  id        Int      @id @default(autoincrement())
-  shop      String
-  productId String
-  variantId String
-  imageId   String
-  createdAt DateTime @default(now())
 
-  @@unique([shop, variantId])
+ id        Int      @id @default(autoincrement())
+
+ shop      String
+ productId String
+ variantId String
+ imageId   String
+
+ createdAt DateTime @default(now())
+
+ @@unique([shop,variantId], name: "shop_variantId")
 }
 
 model AppSettings {
@@ -47,11 +50,16 @@ model AppSettings {
 }
 
 model VariantSwatch {
- id        Int      @id @default(autoincrement())
+
+ id        Int @id @default(autoincrement())
+
  shop      String
  productId String
  variantId String
+
  type      String
  value     String
+
  createdAt DateTime @default(now())
+
 }

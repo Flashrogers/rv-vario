@@ -5,9 +5,10 @@ const cors = require("cors")
 
 const productsRoute = require("./routes/products")
 const productRoute = require("./routes/product")
-const variantImagesRoute = require("./routes/variantimages")
+const variantImagesRoute = require("./routes/variantImages")
 const autoArrangeRoute = require("./routes/autoArrange")
 const swatchRoute = require("./routes/swatches")
+const webhooks = require("./routes/webhooks")
 
 const app = express()
 
@@ -19,7 +20,10 @@ app.use("/product", productRoute)
 app.use("/variant-images", variantImagesRoute)
 app.use("/auto-arrange", autoArrangeRoute)
 app.use("/swatches", swatchRoute)
+app.use("/webhooks", webhooks)
 
-app.listen(process.env.PORT, () => {
- console.log(`Server running on port ${process.env.PORT}`)
+const PORT = process.env.PORT || 5000
+
+app.listen(PORT, () => {
+ console.log(`Server running on port ${PORT}`)
 })

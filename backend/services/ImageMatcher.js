@@ -1,58 +1,58 @@
-function autoArrange(variants, images){
+function normalize(str){
+ return str
+  ?.toLowerCase()
+  .replace(/[^a-z0-9]/g,"")
+}
+
+function scoreMatch(option, imageName){
+
+ const normalizedOption = normalize(option)
+ const normalizedImage = normalize(imageName)
+
+ if(!normalizedOption) return 0
+
+ if(normalizedImage.includes(normalizedOption)){
+  return normalizedOption.length
+ }
+
+ return 0
+}
+
+function imageMatcher(variants, images){
 
  const result = {}
 
- variants.forEach(v=>{
-   result[v.id] = []
- })
+ variants.forEach(variant => {
 
- images.forEach(img => {
+  const options = [
+   variant.option1,
+   variant.option2,
+   variant.option3
+  ].filter(Boolean)
 
-   variants.forEach(v => {
+  let bestScore = 0
+  let bestImage = null
 
-     const option = v.option1?.toLowerCase()
+  images.forEach(img => {
 
-     if(img.src.toLowerCase().includes(option)){
-        result[v.id].push(img.id)
-     }
+   let score = 0
 
+   options.forEach(option => {
+    score += scoreMatch(option, img.src)
    })
+
+   if(score > bestScore){
+    bestScore = score
+    bestImage = img
+   }
+
+  })
+
+  result[variant.id] = bestImage ? bestImage.id : null
 
  })
 
  return result
-}
-
-module.exports = autoArrange
-
-function imageMatcher(variants,images){
-
-  const result = {}
-
-  variants.forEach(v => {
-
-    result[v.id] = null
-
-  })
-
-  variants.forEach(variant => {
-
-    const option = variant.option1?.toLowerCase()
-
-    images.forEach(image => {
-
-      if(image.src.toLowerCase().includes(option)){
-
-        result[variant.id] = image.id
-
-      }
-
-    })
-
-  })
-
-  return result
-
 }
 
 module.exports = imageMatcher

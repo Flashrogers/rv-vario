@@ -14,9 +14,17 @@ router.post("/save", async (req,res)=>{
 
   const {shop,productId,assignments} = req.body
 
+  if(!shop || !productId || !assignments){
+    return res.status(400).json({error:"Missing required fields"})
+  }
+
   try{
 
     for(const variantId in assignments){
+
+      const imageId = assignments[variantId]
+
+      if(!imageId) continue
 
       await prisma.variantImageMap.upsert({
 
@@ -28,14 +36,14 @@ router.post("/save", async (req,res)=>{
         },
 
         update:{
-          imageId:assignments[variantId]
+          imageId
         },
 
         create:{
           shop,
           productId,
           variantId,
-          imageId:assignments[variantId]
+          imageId
         }
 
       })
@@ -61,13 +69,21 @@ router.post("/auto", async (req,res)=>{
 
   const {shop,productId} = req.body
 
+  if(!shop || !productId){
+    return res.status(400).json({error:"Missing parameters"})
+  }
+
   try{
 
     const store = await prisma.store.findUnique({
       where:{shop}
     })
 
-    const product = await axios.get(
+    if(!store){
+      return res.status(404).json({error:"Store not found"})
+    }
+
+    const productResponse = await axios.get(
       `https://${shop}/admin/api/2024-04/products/${productId}.json`,
       {
         headers:{
@@ -76,12 +92,51 @@ router.post("/auto", async (req,res)=>{
       }
     )
 
-    const variants = product.data.product.variants
-    const images = product.data.product.images
+    const product = productResponse.data.product
 
-    const result = imageMatcher(variants,images)
+    const variants = product.variants
+    const images = product.images
 
-    res.json(result)
+    const assignments = imageMatcher(variants,images)
+
+    /*
+    SAVE RESULT
+    */
+
+    for(const variantId in assignments){
+
+      const imageId = assignments[variantId]
+
+      if(!imageId) continue
+
+      await prisma.variantImageMap.upsert({
+
+        where:{
+          shop_variantId:{
+            shop,
+            variantId
+          }
+        },
+
+        update:{
+          imageId
+        },
+
+        create:{
+          shop,
+          productId,
+          variantId,
+          imageId
+        }
+
+      })
+
+    }
+
+    res.json({
+      status:"auto-arranged",
+      assignments
+    })
 
   }catch(err){
 

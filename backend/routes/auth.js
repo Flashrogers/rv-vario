@@ -1,5 +1,7 @@
 const express = require("express")
 const axios = require("axios")
+const crypto = require("crypto")
+
 const prisma = require("../utils/prisma")
 
 const router = express.Router()
@@ -8,47 +10,133 @@ const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY
 const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET
 const HOST = process.env.HOST
 
-router.get("/install", async (req,res)=>{
+/*
+INSTALL APP
+*/
+
+router.get("/install", (req,res)=>{
 
  const shop = req.query.shop
 
- const redirect = `https://${shop}/admin/oauth/authorize?client_id=${SHOPIFY_API_KEY}&scope=read_products,write_products&redirect_uri=${HOST}/auth/callback`
+ if(!shop){
+  return res.status(400).send("Missing shop parameter")
+ }
 
- res.redirect(redirect)
+ const state = crypto.randomBytes(16).toString("hex")
+
+ const redirectUrl =
+  `https://${shop}/admin/oauth/authorize` +
+  `?client_id=${SHOPIFY_API_KEY}` +
+  `&scope=read_products,write_products` +
+  `&redirect_uri=${HOST}/auth/callback` +
+  `&state=${state}`
+
+ res.redirect(redirectUrl)
 
 })
+
+/*
+OAUTH CALLBACK
+*/
 
 router.get("/callback", async (req,res)=>{
 
- const {shop, code} = req.query
+ const {shop, code, hmac, state, ...rest} = req.query
 
- const response = await axios.post(
+ if(!shop || !code || !hmac){
+  return res.status(400).send("Invalid OAuth request")
+ }
+
+ /*
+ VERIFY HMAC
+ */
+
+ const message = Object.keys(rest)
+  .sort()
+  .map(key => `${key}=${rest[key]}`)
+  .join("&")
+
+ const generatedHash = crypto
+  .createHmac("sha256", SHOPIFY_API_SECRET)
+  .update(message)
+  .digest("hex")
+
+ if(generatedHash !== hmac){
+  return res.status(400).send("HMAC validation failed")
+ }
+
+ try{
+
+  /*
+  EXCHANGE CODE FOR ACCESS TOKEN
+  */
+
+  const tokenResponse = await axios.post(
    `https://${shop}/admin/oauth/access_token`,
    {
-     client_id: SHOPIFY_API_KEY,
-     client_secret: SHOPIFY_API_SECRET,
-     code
+    client_id: SHOPIFY_API_KEY,
+    client_secret: SHOPIFY_API_SECRET,
+    code
    }
- )
+  )
 
- const accessToken = response.data.access_token
+  const accessToken = tokenResponse.data.access_token
 
-// Save shop in database
-await prisma.shop.upsert({
-  where: { shop },
-  update: {
+  /*
+  SAVE STORE
+  */
+
+  await prisma.shop.upsert({
+
+   where:{shop},
+
+   update:{
     accessToken
-  },
-  create: {
+   },
+
+   create:{
     shop,
     accessToken,
-    scope: "read_products,write_products"
-  }
-})
+    scope:"read_products,write_products"
+   }
 
-console.log("Shop saved:", shop)
+  })
 
-res.send("App Installed Successfully")
+  console.log("Shop installed:", shop)
+
+  /*
+  REGISTER UNINSTALL WEBHOOK
+  */
+
+  await axios.post(
+   `https://${shop}/admin/api/2024-04/webhooks.json`,
+   {
+    webhook:{
+     topic:"app/uninstalled",
+     address:`${HOST}/webhooks/app-uninstalled`,
+     format:"json"
+    }
+   },
+   {
+    headers:{
+     "X-Shopify-Access-Token":accessToken
+    }
+   }
+  )
+
+  /*
+  REDIRECT TO APP
+  */
+
+  res.redirect(`/app?shop=${shop}`)
+
+ }catch(err){
+
+  console.error("OAuth error:", err.response?.data || err)
+
+  res.status(500).send("OAuth failed")
+
+ }
 
 })
 
