@@ -1,55 +1,49 @@
 const express = require("express")
-const axios = require("axios")
-
 const router = express.Router()
+const prisma = require("../utils/prisma")
 
+/**
+ * GET /products?shop=...&page=1&search=...&status=...
+ * Returns paginated product list for the admin UI
+ */
 router.get("/", async (req, res) => {
+  const { shop, search = "", status = "", page = 1 } = req.query
 
- try {
+  if (!shop) return res.status(400).json({ error: "Missing shop" })
 
-  const SHOP = process.env.SHOPIFY_SHOP
-  const TOKEN = process.env.SHOPIFY_ACCESS_TOKEN
+  const PAGE_SIZE = 20
+  const skip = (parseInt(page) - 1) * PAGE_SIZE
 
-  console.log("SHOP:", SHOP)
-  console.log("TOKEN:", TOKEN ? "Token Loaded" : "Token Missing")
-
-  const response = await axios.get(
-   `https://${SHOP}/admin/api/2024-01/products.json`,
-   {
-    headers: {
-     "X-Shopify-Access-Token": TOKEN,
-     "Content-Type": "application/json"
+  try {
+    const where = {
+      shop,
+      ...(search && {
+        title: { contains: search, mode: "insensitive" }
+      }),
+      ...(status && { status })
     }
-   }
-  )
 
-  const products = response.data.products.map(product => ({
-   id: product.id,
-   title: product.title,
-   image: product.image?.src || null,
-   media: product.images.length,
-   status: product.status
-  }))
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        skip,
+        take: PAGE_SIZE,
+        orderBy: { createdAt: "desc" }
+      }),
+      prisma.product.count({ where })
+    ])
 
-  res.json({ products })
-
- } catch (error) {
-
-  console.log("SHOPIFY ERROR ↓↓↓")
-
-  if (error.response) {
-   console.log(error.response.status)
-   console.log(error.response.data)
-  } else {
-   console.log(error.message)
+    res.json({
+      products,
+      total,
+      page: parseInt(page),
+      hasNext: skip + PAGE_SIZE < total,
+      hasPrev: parseInt(page) > 1
+    })
+  } catch (err) {
+    console.error("[products]", err)
+    res.status(500).json({ error: "Failed to fetch products" })
   }
-
-  res.status(500).json({
-   error: "Failed to fetch products"
-  })
-
- }
-
 })
 
 module.exports = router

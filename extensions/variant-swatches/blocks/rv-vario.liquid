@@ -1,0 +1,133 @@
+{% comment %}
+  RV-VARIO Theme Extension Block
+  Renders variant swatches and injects variant-image mapping + app settings
+{% endcomment %}
+
+<div id="rv-vario-container" data-product-id="{{ product.id }}">
+  <div id="rv-variant-swatches" class="rv-swatches--{{ block.settings.swatch_size }}"></div>
+</div>
+
+<link rel="stylesheet" href="{{ 'rv-vario.css' | asset_url }}">
+
+<script>
+  // Product data
+  window.rvProduct = {{ product | json }};
+
+  // Variant → Image mapping (fetched from app backend and injected at render time)
+  window.rvVariantData = {};
+  {% for variant in product.variants %}
+    {% comment %}
+      The metafield rv_vario.image_id is written by the backend
+      when a merchant saves a variant-image mapping.
+    {% endcomment %}
+    {% assign image_id = variant.metafields.rv_vario.image_id %}
+    {% if image_id %}
+      window.rvVariantData["{{ variant.id }}"] = "{{ image_id }}";
+    {% endif %}
+  {% endfor %}
+
+  // Swatch color/image data
+  window.rvSwatchData = {};
+  {% for variant in product.variants %}
+    {% assign swatch_type  = variant.metafields.rv_vario.swatch_type %}
+    {% assign swatch_value = variant.metafields.rv_vario.swatch_value %}
+    {% if swatch_type and swatch_value %}
+      window.rvSwatchData["{{ variant.id }}"] = {
+        type: "{{ swatch_type }}",
+        value: "{{ swatch_value }}"
+      };
+    {% endif %}
+  {% endfor %}
+
+  // App settings (injected from Shopify metafields or block settings)
+  window.rvSettings = {
+    swatchStyle:         "{{ block.settings.swatch_style | default: 'mixed' }}",
+    swatchSize:          "{{ block.settings.swatch_size | default: 'medium' }}",
+    hideDefaultPicker:   {{ block.settings.hide_default_picker | default: true }},
+    enableGalleryFilter: {{ block.settings.enable_gallery_filter | default: true }},
+    showOutOfStock:      {{ block.settings.show_out_of_stock | default: false }},
+    outOfStockStyle:     "{{ block.settings.out_of_stock_style | default: 'strikethrough' }}",
+    filterMode:          "{{ block.settings.filter_mode | default: 'dim' }}",
+    customCss:           {{ block.settings.custom_css | default: '' | json }}
+  };
+</script>
+
+<script src="{{ 'rv-vario.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "RV VARIO Swatches",
+  "target": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "swatch_style",
+      "label": "Swatch Style",
+      "default": "mixed",
+      "options": [
+        { "value": "button", "label": "Button (text)" },
+        { "value": "color",  "label": "Color Swatch" },
+        { "value": "image",  "label": "Image Thumbnail" },
+        { "value": "mixed",  "label": "Mixed (auto-detect)" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "swatch_size",
+      "label": "Swatch Size",
+      "default": "medium",
+      "options": [
+        { "value": "small",  "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large",  "label": "Large" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_default_picker",
+      "label": "Hide default variant picker",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_gallery_filter",
+      "label": "Enable gallery image filtering",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_out_of_stock",
+      "label": "Show out-of-stock variants",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "out_of_stock_style",
+      "label": "Out-of-stock style",
+      "default": "strikethrough",
+      "options": [
+        { "value": "strikethrough", "label": "Strikethrough" },
+        { "value": "grey",          "label": "Greyed out" },
+        { "value": "hidden",        "label": "Hidden" },
+        { "value": "label",         "label": "Show with label" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "filter_mode",
+      "label": "Gallery filter mode",
+      "default": "dim",
+      "options": [
+        { "value": "dim",       "label": "Dim unmatched images" },
+        { "value": "show-only", "label": "Hide unmatched images" }
+      ]
+    },
+    {
+      "type": "textarea",
+      "id": "custom_css",
+      "label": "Custom CSS",
+      "default": ""
+    }
+  ]
+}
+{% endschema %}

@@ -1,3 +1,7 @@
 name = "variant-swatches"
 type = "theme"
 uid = "9b67ed9b-bac5-2c4e-26e0-fae435ea7c6713609365"
+
+[[blocks]]
+name = "RV VARIO Swatches"
+target = "section"

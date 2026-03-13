@@ -10,8 +10,8 @@ const autoArrangeRoute = require("./routes/autoArrange")
 const swatchRoute = require("./routes/swatches")
 const storefrontRoute = require("./routes/storefront")
 const syncRoute = require("./routes/sync")
-
-const webhooks = require("./routes/webhooks")
+const settingsRoute = require("./routes/settings")
+const webhooksRoute = require("./routes/webhooks")
 
 const app = express()
 
@@ -25,11 +25,11 @@ app.use("/auto-arrange", autoArrangeRoute)
 app.use("/swatches", swatchRoute)
 app.use("/storefront", storefrontRoute)
 app.use("/sync-products", syncRoute)
-
-app.use("/webhooks", webhooks)
+app.use("/settings", settingsRoute)
+app.use("/webhooks", webhooksRoute)
 
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
- console.log(`Server running on port ${PORT}`)
+  console.log(`RV-VARIO backend running on port ${PORT}`)
 })

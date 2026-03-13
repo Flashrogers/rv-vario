@@ -14,12 +14,6 @@ model Shop {
   scope       String
   installedAt DateTime @default(now())
 }
-model Store {
-  id        Int      @id @default(autoincrement())
-  shop      String   @unique
-  accessToken String
-  createdAt DateTime @default(now())
-}
 
 model Product {
 
@@ -35,53 +29,48 @@ model Product {
 }
 
 model ProductConfig {
+
   id        Int      @id @default(autoincrement())
   shop      String
   productId String
   enabled   Boolean  @default(true)
   createdAt DateTime @default(now())
-}
-model VariantImage {
-
-  id        Int @id @default(autoincrement())
-  shop      String
-  productId String
-  variantId String
-  imageId   String
 
 }
 
 model VariantImageMap {
 
- id        Int      @id @default(autoincrement())
-
- shop      String
- productId String
- variantId String
- imageId   String
-
- createdAt DateTime @default(now())
-
- @@unique([shop,variantId], name: "shop_variantId")
-}
-
-model AppSettings {
   id        Int      @id @default(autoincrement())
+
   shop      String
-  applyMode String   @default("tag")
+  productId String
+  variantId String
+  imageId   String
+
+  createdAt DateTime @default(now())
+
+  @@unique([shop,variantId,imageId], name: "shop_variant_image")
 }
 
 model VariantSwatch {
 
- id        Int @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
 
- shop      String
- productId String
- variantId String
+  shop      String
+  productId String
+  variantId String
 
- type      String
- value     String
+  type      String
+  value     String
 
- createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
+
+}
+
+model AppSettings {
+
+  id        Int      @id @default(autoincrement())
+  shop      String
+  applyMode String   @default("tag")
 
 }

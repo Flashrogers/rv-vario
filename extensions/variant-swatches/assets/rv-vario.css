@@ -1,0 +1,185 @@
+/* ─── RV-VARIO Swatch Styles ─────────────────────────────────────────── */
+
+#rv-vario-container {
+  margin-bottom: 16px;
+}
+
+#rv-variant-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ─── Base Swatch ──────────────────────────────────────────────────────── */
+
+.rv-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  transition: border-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  background: none;
+  padding: 0;
+  position: relative;
+  outline: none;
+  font-family: inherit;
+}
+
+.rv-swatch:hover {
+  transform: scale(1.05);
+}
+
+.rv-swatch:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.rv-swatch.active {
+  border-color: #111;
+}
+
+/* ─── Button Swatch ────────────────────────────────────────────────────── */
+
+.rv-swatch--button {
+  padding: 6px 14px;
+  background: #f4f4f4;
+  color: #111;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 2px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.rv-swatch--button:hover {
+  background: #e8e8e8;
+  border-color: #bbb;
+}
+
+.rv-swatch--button.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* Size variants for button swatches */
+.rv-swatches--small .rv-swatch--button {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.rv-swatches--large .rv-swatch--button {
+  padding: 8px 18px;
+  font-size: 15px;
+}
+
+/* ─── Color Swatch ─────────────────────────────────────────────────────── */
+
+.rv-swatch--color {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.rv-swatch--color:hover {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
+}
+
+.rv-swatch--color.active {
+  box-shadow: 0 0 0 2px #111, 0 0 0 4px rgba(255,255,255,0.9);
+  border-color: transparent;
+}
+
+/* Size variants for color swatches */
+.rv-swatches--small .rv-swatch--color {
+  width: 28px;
+  height: 28px;
+}
+
+.rv-swatches--large .rv-swatch--color {
+  width: 48px;
+  height: 48px;
+}
+
+/* ─── Image Swatch ─────────────────────────────────────────────────────── */
+
+.rv-swatch--image {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid #e0e0e0;
+}
+
+.rv-swatch--image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.rv-swatch--image.active {
+  border-color: #111;
+}
+
+.rv-swatches--small .rv-swatch--image {
+  width: 36px;
+  height: 36px;
+}
+
+.rv-swatches--large .rv-swatch--image {
+  width: 60px;
+  height: 60px;
+}
+
+/* ─── Out-of-Stock States ──────────────────────────────────────────────── */
+
+.rv-swatch.out-of-stock {
+  cursor: not-allowed;
+}
+
+/* Strikethrough diagonal line */
+.rv-swatch__strikethrough {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rv-swatch__strikethrough::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  right: -4px;
+  height: 1.5px;
+  background: rgba(0, 0, 0, 0.45);
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+
+/* ─── Gallery Transitions ──────────────────────────────────────────────── */
+
+.product__media-item,
+.product-single__photo,
+.gallery-cell {
+  transition: opacity 0.25s ease;
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  #rv-variant-swatches {
+    gap: 6px;
+  }
+
+  .rv-swatch--button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
